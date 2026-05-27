@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Animal Price Analyzer</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2 family=Sora:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    
+    <style>
+        /* ==========================================================================
+           CORE STYLES & VARIABLE DEFINITIONS
+           ========================================================================== */
+        :root {
+            --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #111827 100%);
+            --green: #10b981;
+            --blue: #3b82f6;
+            --orange: #f97316;
+            --text: #f8fafc;
+            --text-muted: #94a3b8;
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --card-border: rgba(255, 255, 255, 0.08);
+        }
+
+        body {
+            background: var(--bg-gradient);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+            font-family: 'Sora', sans-serif;
+            color: var(--text);
+            min-height: 100vh;
+            padding: 40px 0;
+        }
+
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .header h1 {
+            font-weight: 800;
+            background: linear-gradient(to right, #6EE7B7, #3B82F6, #F43F5E);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+
+        /* ==========================================================================
+           CARD STYLES WITH HOVER ANIMATIONS
+           ========================================================================== */
+        .card-wrap {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 24px;
+            padding: 28px;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card-wrap:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+        }
+
+        .card-green { border-top: 4px solid var(--green); }
+        .card-blue { border-top: 4px solid var(--blue); }
+        .card-orange { border-top: 4px solid var(--orange); }
+
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .green-text { color: #34d399; }
+        .blue-text { color: #60a5fa; }
+        .orange-text { color: #fb923c; }
+
+        /* Form Controls */
+        .form-label {
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+        }
+
+        .form-control, .form-select {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid var(--card-border);
+            color: var(--text);
+            border-radius: 12px;
+            padding: 12px 16px;
+            font-family: 'Sora', sans-serif;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus, .form-select:focus {
+            background: rgba(15, 23, 42, 0.8);
+            color: var(--text);
+            box-shadow: none;
+        }
+
+        .green-focus:focus { border-color: var(--green); box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2); }
+        .blue-focus:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2); }
+        .orange-focus:focus { border-color: var(--orange); box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.2); }
+
+        /* Buttons */
+        .btn {
+            border-radius: 12px;
+            padding: 12px;
+            font-weight: 700;
+            border: none;
+            transition: all 0.3s ease;
+        }
+        .btn-green { background: var(--green); color: #fff; }
+        .btn-green:hover { background: #059669; transform: scale(1.02); }
+        .btn-blue { background: var(--blue); color: #fff; }
+        .btn-blue:hover { background: #2563eb; transform: scale(1.02); }
+        .btn-orange { background: var(--orange); color: #fff; }
+        .btn-orange:hover { background: #ea580c; transform: scale(1.02); }
+
+        /* Results Display */
+        .result-box {
+            background: rgba(15, 23, 42, 0.5);
+            border-radius: 16px;
+            padding: 20px;
+            margin-top: 24px;
+            border: 1px solid var(--card-border);
+            animation: fadeIn 0.5s ease forwards;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .result-section-title {
+            font-size: 0.95rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 16px;
+        }
+
+        .result-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            font-size: 0.95rem;
+        }
+
+        .result-label { color: var(--text-muted); }
+        .result-val { font-family: 'JetBrains Mono', monospace; font-weight: 600; }
+
+        /* Badges & Distribution Bars */
+        .status-badge {
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 0.85rem;
+        }
+        .status-cheap { background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }
+        .status-expensive { background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); }
+        .status-fair { background: rgba(59, 130, 246, 0.15); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.3); }
+
+        .dist-bar-wrap { margin-bottom: 12px; }
+        .dist-bar-label { display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 6px; }
+        .dist-bar-bg { background: rgba(255,255,255,0.1); height: 6px; border-radius: 3px; overflow: hidden; }
+        .dist-bar-fill { height: 100%; width: 33.33%; border-radius: 3px; }
+
+        .connector-hint {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 16px;
+            color: #60a5fa;
+            font-size: 0.85rem;
+            font-weight: 600;
+            animation: pulseHint 2s infinite;
+        }
+        @keyframes pulseHint {
+            0%, 100% { transform: translateX(0); }
+            50% { transform: translateX(5px); }
+        }
+
+        .profit-big {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.75rem;
+            font-weight: 800;
+            text-align: center;
+            margin-top: 20px;
+            padding: 12px;
+            border-radius: 12px;
+        }
+        .profit-positive { background: rgba(16, 185, 129, 0.1); color: #34d399; }
+        .profit-negative { background: rgba(239, 68, 68, 0.1); color: #f87171; }
+
+
+        /* ==========================================================================
+           DYNAMIC MOOD STATE ANIMATIONS (তুই ৩টা “mood state” বানাবি)
+           ========================================================================== */
+        
+        /* 💚 Profit -> Celebration Mode */
+        .celebration-mode {
+            animation: smoothBounce 0.6s cubic-bezier(0.25, 1, 0.5, 1), glowGreen 2s infinite ease-in-out;
+            border-color: var(--green) !important;
+            box-shadow: 0 0 30px rgba(16, 185, 129, 0.3) !important;
+        }
+        @keyframes smoothBounce {
+            0% { transform: scale(0.95) translateY(0); }
+            50% { transform: scale(1.03) translateY(-10px); }
+            100% { transform: scale(1) translateY(0); }
+        }
+        @keyframes glowGreen {
+            0%, 100% { box-shadow: 0 0 25px rgba(16, 185, 129, 0.2); }
+            50% { box-shadow: 0 0 45px rgba(16, 185, 129, 0.5); }
+        }
+
+        /* Confetti Effect inside Card */
+        .celebration-mode::before {
+            content: '🎉';
+            position: absolute;
+            top: 10px; right: 20px;
+            font-size: 1.5rem;
+            animation: confettiPop 1s ease-out forwards;
+        }
+        .celebration-mode::after {
+            content: '✨';
+            position: absolute;
+            bottom: 10px; left: 20px;
+            font-size: 1.2rem;
+            animation: confettiPop 1.2s ease-out infinite alternate;
+        }
+        @keyframes confettiPop {
+            0% { transform: scale(0) rotate(0deg); opacity: 0; }
+            50% { opacity: 1; }
+            100% { transform: scale(1.2) rotate(15deg); }
+        }
+
+        /* 🔥 Expensive / High price -> Fire Mode */
+        .fire-mode {
+            animation: flickerGlow 1.5s infinite alternate, heatBreathing 3s infinite ease-in-out;
+            border-color: #ef4444 !important;
+        }
+        @keyframes flickerGlow {
+            0%, 100% { box-shadow: 0 0 20px rgba(239, 68, 68, 0.3), inset 0 0 10px rgba(239, 68, 68, 0.1); }
+            50% { box-shadow: 0 0 35px rgba(249, 115, 22, 0.6), inset 0 0 20px rgba(249, 115, 22, 0.2); }
+        }
+        @keyframes heatBreathing {
+            0%, 100% { transform: scale(1); filter: blur(0px); }
+            50% { transform: scale(1.01); filter: drop-shadow(0 0 2px rgba(249, 115, 22, 0.2)); }
+        }
+
+        /* ❄️ Cheap / Good deal -> Cool Mode */
+        .cool-mode {
+            animation: neonPulse 2.5s infinite alternate, floatingSoft 4s infinite ease-in-out;
+            border-color: #06b6d4 !important;
+        }
+        @keyframes neonPulse {
+            0% { box-shadow: 0 0 15px rgba(6, 182, 212, 0.2); }
+            100% { box-shadow: 0 0 35px rgba(59, 130, 246, 0.5); }
+        }
+        @keyframes floatingSoft {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-6px); }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container-xl">
+
+    <div class="header text-center mb-5">
+        <h1><i class="fa-solid fa-cow"></i> Animal Price Analyzer</h1>
+        <p>Smart Analytics for Smart Farmers & Buyers — Bangladesh</p>
+    </div>
+
+    <div class="row g-4 align-items-start">
+
+        <div class="col-lg-4 col-md-12">
+            <div class="card-wrap card-green" id="analyzerCard">
+                <div class="card-title green-text">
+                    <i class="fa-solid fa-magnifying-glass-chart"></i> Price & Meat Analyzer
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Animal Type</label>
+                    <select class="form-select" id="animalType">
+                        <option value="cow">🐄 Cow (গরু)</option>
+                        <option value="goat">🐐 Goat (ছাগল)</option>
+                        <option value="sheep">🐑 Sheep (ভেড়া)</option>
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Animal Price (BDT ৳)</label>
+                    <input type="number" class="form-control green-focus" id="price" placeholder="e.g. 80000" min="0">
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Current Meat Price (per KG)</label>
+                    <input type="number" class="form-control green-focus" id="meatPrice" placeholder="e.g. 750" min="0">
+                </div>
+
+                <button class="btn btn-green w-100" onclick="analyzeAnimal()">
+                    <i class="fa-solid fa-magnifying-glass me-2"></i> Analyze Details
+                </button>
+
+                <div id="analyzeResult" class="result-box d-none">
+                    <div class="result-section-title green-text">Analysis Result</div>
+
+                    <div class="result-row">
+                        <span class="result-label">Live Weight</span>
+                        <span class="result-val" id="resLiveWeight">—</span>
+                    </div>
+                    <div class="result-row">
+                        <span class="result-label">Live Weight (মণ)</span>
+                        <span class="result-val" id="resLiveMon">—</span>
+                    </div>
+                    <div class="result-row">
+                        <span class="result-label">Meat Yield</span>
+                        <span class="result-val" id="resMeatYield">—</span>
+                    </div>
+                    <div class="result-row">
+                        <span class="result-label">Meat Yield (মণ)</span>
+                        <span class="result-val" id="resMeatMon">—</span>
+                    </div>
+                    <div class="result-row">
+                        <span class="result-label">Approx. Height</span>
+                        <span class="result-val" id="resHeight">—</span>
+                    </div>
+                    <div class="result-row">
+                        <span class="result-label">Expected Fair Price</span>
+                        <span class="result-val" id="resFairPrice">—</span>
+                    </div>
+                    <div class="result-row" style="border-bottom:none;">
+                        <span class="result-label">Market Status</span>
+                        <span id="resStatus"></span>
+                    </div>
+
+                    <div class="result-section-title green-text" style="margin-top:16px;">Meat Distribution (কোরবানি)</div>
+                    <div class="dist-bar-wrap">
+                        <div class="dist-bar-label"><span><i class="fa-solid fa-house fa-xs me-1"></i> Family (পরিবার)</span><span id="distFamily">—</span></div>
+                        <div class="dist-bar-bg"><div class="dist-bar-fill" style="background:var(--green)"></div></div>
+                    </div>
+                    <div class="dist-bar-wrap">
+                        <div class="dist-bar-label"><span><i class="fa-solid fa-people-group fa-xs me-1"></i> Relatives (আত্মীয়)</span><span id="distRelatives">—</span></div>
+                        <div class="dist-bar-bg"><div class="dist-bar-fill" style="background:var(--blue)"></div></div>
+                    </div>
+                    <div class="dist-bar-wrap">
+                        <div class="dist-bar-label"><span><i class="fa-solid fa-hand-holding-heart fa-xs me-1"></i> Poor (গরীব)</span><span id="distPoor">—</span></div>
+                        <div class="dist-bar-bg"><div class="dist-bar-fill" style="background:var(--orange)"></div></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4 col-md-6">
+            <div class="card-wrap card-blue" id="feedCard">
+                <div class="card-title blue-text">
+                    <i class="fa-solid fa-wheat-awn"></i> Feed Cost Calculator
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Monthly Feed Cost (৳)</label>
+                    <input type="number" class="form-control blue-focus" id="monthlyCost" placeholder="e.g. 1500" min="0">
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Duration (Years)</label>
+                    <input type="number" class="form-control blue-focus" id="years" placeholder="e.g. 1.5" step="0.1" min="0">
+                </div>
+
+                <button class="btn btn-blue w-100" onclick="calcFeed()">
+                    <i class="fa-solid fa-calculator me-2"></i> Calculate Feed Cost
+                </button>
+
+                <div id="feedResult" class="result-box d-none">
+                    <div class="result-section-title blue-text">Feed Cost Breakdown</div>
+                    <div class="result-row">
+                        <span class="result-label">Monthly Cost</span>
+                        <span class="result-val" id="resMonthly">—</span>
+                    </div>
+                    <div class="result-row">
+                        <span class="result-label">Total Months Kept</span>
+                        <span class="result-val" id="resTotalMonths">—</span>
+                    </div>
+                    <div class="result-row" style="border-bottom:none;">
+                        <span class="result-label" style="font-weight:700; color:var(--text);">Total Feed Cost</span>
+                        <span class="result-val blue-text" id="resTotalFeed" style="font-size:1.05rem;">—</span>
+                    </div>
+                </div>
+
+                <div class="connector-hint d-none" id="feedConnectHint">
+                    <i class="fa-solid fa-arrow-right"></i>
+                    <span>Total auto-filled in Profit Calculator →</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4 col-md-6">
+            <div class="card-wrap card-orange" id="profitCard">
+                <div class="card-title orange-text">
+                    <i class="fa-solid fa-sack-dollar"></i> Profit Calculator
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Buy Price (৳)</label>
+                    <input type="number" class="form-control orange-focus" id="buyPrice" placeholder="e.g. 80000" min="0">
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Total Feed Cost (৳)</label>
+                    <input type="number" class="form-control orange-focus" id="totalFoodCost" placeholder="Auto-filled from Feed Calculator" min="0">
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Sell Price (৳)</label>
+                    <input type="number" class="form-control orange-focus" id="sellPrice" placeholder="e.g. 120000" min="0">
+                </div>
+
+                <button class="btn btn-orange w-100" onclick="calcProfit()">
+                    <i class="fa-solid fa-chart-line me-2"></i> Calculate Profit / Loss
+                </button>
+
+                <div id="profitResult" class="result-box d-none">
+                    <div class="result-section-title orange-text">Profit / Loss Summary</div>
+                    <div class="result-row">
+                        <span class="result-label">Buy Price</span>
+                        <span class="result-val" id="resBuyPrice">—</span>
+                    </div>
+                    <div class="result-row">
+                        <span class="result-label">Feed Cost</span>
+                        <span class="result-val" id="resFeedCost">—</span>
+                    </div>
+                    <div class="result-row">
+                        <span class="result-label">Total Investment</span>
+                        <span class="result-val" id="resInvestment">—</span>
+                    </div>
+                    <div class="result-row">
+                        <span class="result-label">Sell Price</span>
+                        <span class="result-val" id="resSellPrice">—</span>
+                    </div>
+                    <div class="profit-big" id="profitOutput"></div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+// ===========================
+// UTILITY
+// ===========================
+const fmt = n => '৳ ' + Number(n).toLocaleString('en-BD', {maximumFractionDigits: 2});
+const fmtKg = n => n.toFixed(2) + ' kg';
+const fmtMon = n => n.toFixed(3) + ' মণ';
+
+let globalMonthsKept = 0;
+let globalMonthlyCost = 0;
+
+// ===========================
+// 1. ANALYZER
+// ===========================
+function analyzeAnimal() {
+  const animalType = document.getElementById('animalType').value;
+  const price      = parseFloat(document.getElementById('price').value);
+  const meatPrice  = parseFloat(document.getElementById('meatPrice').value);
+
+  if (!price || price <= 0 || !meatPrice || meatPrice <= 0) {
+    alert('অনুগ্রহ করে সকল তথ্য সঠিকভাবে দিন।');
+    return;
+  }
+
+  let meatPerKgBuy, dressPercent, height;
+
+  if (animalType === 'cow') {
+    meatPerKgBuy  = 900;    
+    dressPercent  = 0.58;   
+    height        = '4.5 feet (Approx)';
+  } else if (animalType === 'goat') {
+    meatPerKgBuy  = 1100;
+    dressPercent  = 0.48;
+    height        = '2.5 feet (Approx)';
+  } else {
+    meatPerKgBuy  = 1050;
+    dressPercent  = 0.50;
+    height        = '3 feet (Approx)';
+  }
+
+  const liveWeightKg    = price / meatPerKgBuy;
+  const meatYieldKg     = liveWeightKg * dressPercent;
+  const liveWeightMon   = liveWeightKg / 40;
+  const meatYieldMon    = meatYieldKg / 40;
+  const expectedFairPrice = meatYieldKg * meatPrice;
+
+  let status, statusClass;
+  
+  // Mood Trigger Selector for Analyzer Card
+  const analyzerCard = document.getElementById('analyzerCard');
+  analyzerCard.classList.remove('cool-mode', 'fire-mode');
+
+  if (price < expectedFairPrice * 0.90) {
+    status = 'Cheap ✓';  statusClass = 'status-cheap';
+    analyzerCard.classList.add('cool-mode'); // ❄️ Cheap Mode Dynamic
+  } else if (price > expectedFairPrice * 1.10) {
+    status = 'Expensive ✗'; statusClass = 'status-expensive';
+    analyzerCard.classList.add('fire-mode'); // 🔥 Expensive Mode Dynamic
+  } else {
+    status = 'Fair ~'; statusClass = 'status-fair';
+  }
+
+  const share = meatYieldKg / 3;
+
+  document.getElementById('resLiveWeight').textContent  = fmtKg(liveWeightKg);
+  document.getElementById('resLiveMon').textContent     = fmtMon(liveWeightMon);
+  document.getElementById('resMeatYield').textContent   = fmtKg(meatYieldKg);
+  document.getElementById('resMeatMon').textContent     = fmtMon(meatYieldMon);
+  document.getElementById('resHeight').textContent      = height;
+  document.getElementById('resFairPrice').textContent   = fmt(expectedFairPrice);
+  document.getElementById('distFamily').textContent     = fmtKg(share);
+  document.getElementById('distRelatives').textContent  = fmtKg(share);
+  document.getElementById('distPoor').textContent       = fmtKg(share);
+
+  const statusEl = document.getElementById('resStatus');
+  statusEl.textContent  = status;
+  statusEl.className    = 'status-badge ' + statusClass;
+
+  document.getElementById('analyzeResult').classList.remove('d-none');
+}
+
+// ===========================
+// 2. FEED CALCULATOR (Monthly Cost & Years Based)
+// ===========================
+function calcFeed() {
+  const monthlyCost = parseFloat(document.getElementById('monthlyCost').value);
+  const years = parseFloat(document.getElementById('years').value);
+
+  if (!monthlyCost || monthlyCost <= 0 || !years || years <= 0) {
+    alert('অনুগ্রহ করে Monthly Cost এবং Years সঠিকভাবে দিন।');
+    return;
+  }
+
+  // Years into Months and Total Calculation
+  const totalMonths = years * 12;
+  const totalCost   = monthlyCost * totalMonths;
+
+  globalMonthsKept = totalMonths;
+  globalMonthlyCost = monthlyCost;
+
+  document.getElementById('resMonthly').textContent = fmt(monthlyCost);
+  document.getElementById('resTotalMonths').textContent = totalMonths.toFixed(1) + ' Months';
+  document.getElementById('resTotalFeed').textContent = fmt(totalCost);
+
+  document.getElementById('feedResult').classList.remove('d-none');
+  document.getElementById('feedConnectHint').classList.remove('d-none');
+
+  // ✅ Auto-fills direct total cost to Profit Card
+  document.getElementById('totalFoodCost').value = totalCost.toFixed(2);
+  document.getElementById('totalFoodCost').style.borderColor = 'var(--blue)';
+  setTimeout(() => {
+    document.getElementById('totalFoodCost').style.borderColor = '';
+  }, 1500);
+}
+
+// ===========================
+// 3. PROFIT CALCULATOR
+// ===========================
+function calcProfit() {
+  const animalType = document.getElementById('animalType').value;
+  const buyPrice  = parseFloat(document.getElementById('buyPrice').value);
+  const foodCost  = parseFloat(document.getElementById('totalFoodCost').value);
+  const sellPrice = parseFloat(document.getElementById('sellPrice').value);
+
+  if (!buyPrice || buyPrice <= 0 || isNaN(foodCost) || !sellPrice || sellPrice <= 0) {
+    alert('অনুগ্রহ করে Buy Price এবং Sell Price সঠিকভাবে দিন।');
+    return;
+  }
+
+  const totalInvestment = buyPrice + (foodCost || 0);
+  const netProfit       = sellPrice - totalInvestment;
+
+  document.getElementById('resBuyPrice').textContent   = fmt(buyPrice);
+  document.getElementById('resFeedCost').textContent   = fmt(foodCost || 0);
+  document.getElementById('resInvestment').textContent = fmt(totalInvestment);
+  document.getElementById('resSellPrice').textContent  = fmt(sellPrice);
+
+  const profitEl = document.getElementById('profitOutput');
+  const profitCard = document.getElementById('profitCard');
+  
+  // Clear previous state
+  profitCard.classList.remove('celebration-mode');
+
+  if (netProfit >= 0) {
+    profitEl.textContent  = '+ ' + fmt(netProfit).replace('৳ ', '') + ' ৳';
+    profitEl.className    = 'profit-big profit-positive';
+    profitCard.classList.add('celebration-mode'); // 💚 Profit Celebration Mode Trigger
+  } else {
+    profitEl.textContent  = '− ' + fmt(Math.abs(netProfit)).replace('৳ ', '') + ' ৳';
+    profitEl.className    = 'profit-big profit-negative';
+  }
+
+  document.getElementById('profitResult').classList.remove('d-none');
+
+  // API Call to dynamic storage
+  fetch('/calculate_profit', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+          animal_type: animalType,
+          buy_price: buyPrice,
+          daily_food_cost: (globalMonthlyCost / 30) || 0, 
+          months_kept: globalMonthsKept || Math.round((foodCost / (globalMonthlyCost || 1))),
+          food_cost: foodCost,
+          sell_price: sellPrice
+      })
+  })
+  .then(res => res.json())
+  .then(data => console.log('Stored in Database:', data))
+  .catch(err => console.error('Database Error:', err));
+}
+
+document.querySelectorAll('input').forEach(input => {
+  input.addEventListener('keydown', e => { if (e.key === 'Enter') e.target.blur(); });
+});
+</script>
+
+</body>
+</html>
